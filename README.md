@@ -9,7 +9,8 @@ This repository contains the code implementation for TimeDiff, a diffusion model
 * The specific implementation of the model can be found at `models/ETDiff`.
 
 ## Data Pre-processing 📊
-Please see `preprocess` directory for Jupyter notebooks and Python scripts on how we preprocess EHR data for model training and evaluation.
+* Please see `preprocess` directory for Jupyter notebooks and Python scripts on how we preprocess EHR data for model training and evaluation.
+* Note that we use `PostgreSQL` dialect for `.sql` files, and all the concepts are computed using `PostgreSQL` as well (the scripts for these concepts can be found in [official MIMIC repository](https://github.com/MIT-LCP/mimic-code/tree/main/mimic-iv/concepts_postgres)).
 
 ## Baselines 📚
 ***NOTE: Please set `PYTHONPATH` correctly to the root of this repository in order to run the baseline models.***
