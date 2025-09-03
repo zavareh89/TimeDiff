@@ -25,12 +25,12 @@ class DataBaseLoader():
         self.dbname = dbname
         if schema is not None:
             self.engine = create_engine(
-                f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}",
+                f"postgresql+psycopg://{user}:{password}@{host}:{port}/{dbname}",
                 connect_args={'options': f"-c search_path={schema}"}
             )
         else:
             self.engine = create_engine(
-                f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}"
+                f"postgresql+psycopg://{user}:{password}@{host}:{port}/{dbname}"
             )
     
     def __getitem__(self, TableName:str) -> pd.DataFrame:
