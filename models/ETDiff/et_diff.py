@@ -36,7 +36,7 @@ class ETDiff(nn.Module):
         mixed_precision_type = 'fp16',
         split_batches = True,
         wandb = None,
-        check_point_path = "results/checkpoint.pt",
+        check_point_path = "results/models/checkpoint.pt",
         run_id = 2023,
     ):
         super().__init__()

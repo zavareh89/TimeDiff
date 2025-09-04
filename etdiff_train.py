@@ -2,10 +2,11 @@ import argparse
 import time
 # import os
 # os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+# import seaborn as sns
 import torch
 
 import wandb
@@ -37,8 +38,10 @@ def parse_arguments():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     prs.add_argument(
-        "--load_path", type=is_file_on_disk, default="data/eicu-extract/TRAIN_irregular_all_patients_0_1440_5.pt", # required=True,
-        help="path to load data"
+        "--load_path",
+        type=is_file_on_disk,
+        default="data/eicu-extract/TRAIN-eicu_multiple_60_1440_276.pt",  # required=True,
+        help="path to load data",
     )
     prs.add_argument(
         "--data_name", type=str, default="eicu",
@@ -109,7 +112,7 @@ def parse_arguments():
         help="whether to normalize data to [-1, 1] in GaussianDiffusion()"
     )
     prs.add_argument(
-        "--record_every", type=is_positive_integer, default=10, 
+        "--record_every", type=is_positive_integer, default=100, 
         help="record every n steps"
     )
     prs.add_argument("--wandb", action="store_true", 
@@ -199,12 +202,12 @@ if __name__ == "__main__":
     args = parse_arguments()
     seed_everything(args.seed)
     run_id = create_id()
-    
+
     if args.wandb:
         wandb.init(project=args.project_name, entity=args.entity, name=f"ETDiff_{run_id}", config=args)
     else:
         wandb = None
-    
+
     dataset = TimeSeriesDataset(
         categorical_cols = COLUMNS_DICT[args.data_name]["categorical"] if args.data_name in ["eicu", "mimiciv", "mimiciii", "hirid"] else None,             # indicate columns that are not time series values (missing indicators)
         data_name = args.data_name, 
@@ -257,7 +260,7 @@ if __name__ == "__main__":
             categorical_num_classes = COLUMNS_DICT[args.data_name]["categorical_num_classes"],
             loss_lambda = args.loss_lambda,
         )
-    
+
     etdiff = ETDiff(
         diffusion_model = diffusion,
         dataset = dataset,
@@ -272,12 +275,12 @@ if __name__ == "__main__":
         check_point_path = args.check_point_path,
         run_id = run_id,
     )
-    
+
     params = count_params(model)
     print(f"Number of parameters: {params}")
     if args.wandb:
         wandb.log({"total_params": params})
-    
+
     if args.eval == False:
         etdiff.train()
         sample_path = model_path_to_sample_path(args.check_point_path)          # save synthetic samples
@@ -291,9 +294,12 @@ if __name__ == "__main__":
         save_path = model_path_to_sample_path(args.eval_path)
         samples = collect_samples(
             model = etdiff.ema.ema_model, 
-            num_samples = 20000, batch_size = 100, 
+            num_samples = 200000, batch_size = 100, 
             min = etdiff.sample_min, max = etdiff.sample_max,
             positive_only = False,
         )
         np.save(save_path, samples)
         print(f"Samples saved to {save_path}")
+
+# command to run the script
+# python3.11 etdiff_train.py --num_steps 700000 --check_point_path results/models/eICU_tdiff_v0.pt

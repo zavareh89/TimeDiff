@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 import torch
-import torchcde
+# import torchcde
 from torch.utils.data import Dataset
 
 
@@ -20,32 +20,32 @@ class TimeSeriesDataset(Dataset):
             assert load_path is not None, "load_path must be specified if data does not exist in dataset folder"
             assert load_path.endswith(".pt"), "load_path must be a .pt file"
             assert os.path.exists(load_path), "load_path does not exist"
-            
+
             if not os.path.exists(path):
-                os.mkdir(path)
+                os.makedirs(path, exist_ok=True)
             data = torch.load(load_path)
             data = replace_nan_with_mean(data)
             data, self.min, self.max = normalize_data(data, categorical_cols)                 # normalize along the feature dimension
             self.data = data[:,:,:cut_length]
-            
+
             torch.save(self.data, f"{path}/data.pt")
             torch.save(self.min, f"{path}/min.pt")
             torch.save(self.max, f"{path}/max.pt")
-            
+
             print(f"data saved to {path} folder")
-        
+
         print(f"Data dimension: {self.data.shape}")
-    
+
     def __len__(self):
         return len(self.data)
-    
+
     def __getitem__(self, idx):
         return self.data[idx].clone()
-    
+
     @property
     def channels(self):
         return self.data.shape[1]
-    
+
     @property
     def seq_length(self):
         return self.data.shape[2]
@@ -160,4 +160,3 @@ def replace_nan_with(data: torch.Tensor, value):
     data = torch.where(torch.isnan(data), torch.tensor(value), data)
     assert torch.all(~torch.isnan(data)), 'failed to replace NaNs!'
     return data
-    
